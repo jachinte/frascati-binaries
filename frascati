@@ -52,6 +52,29 @@ check_config() {
 	LAUNCHER_MAIN=org.ow2.frascati.Launcher
 	LAUNCHER_LIB=$FRASCATI_LIB/frascati-runtime-${FRASCATI_VERSION}.jar
 	SCA_APPS_FOLDER=$FRASCATI_HOME/sca-apps
+	RUN_CLASSPATH=$FRASCATI_LIB
+	RUN_BOOTSTRAP=org.ow2.frascati.bootstrap.FraSCAti
+	RUN_PROPERTIES=
+}
+
+# Parse command options:
+# * remove all options from arguments at the end of the parsing.
+# WARNING: Options MUST lead arguments
+parse_run_opts() {
+	FRASCATI_SUB_CMD=$1
+	shift
+	while getopts 'r:' opt;
+		do
+			case "$opt" in
+				r)	RUN_CLASSPATH=$FRASCATI_LIB,$FRASCATI_LIB/remote,$FRASCATI_LIB/fscript
+					RUN_BOOTSTRAP=org.ow2.frascati.bootstrap.FraSCAtiJDTFractalRest
+					RUN_PROPERTIES="-Dorg.ow2.frascati.bootstrap=$RUN_BOOTSTRAP -Dorg.ow2.frascati.binding.uri.base=\"http://localhost:$OPTARG\""
+					printf -- "-\> FraSCAti Remote plugin activated\n"
+					printf -- "-\> FraSCAti Script plugin activated\n"
+					;;
+			esac
+		done
+	shift $(($OPTIND - 1))
 }
 
 # Parse command options:
@@ -67,12 +90,12 @@ parse_opts() {
 		do
 			case $OPTION in
 			s)	FRASCATI_SCRIPT_FLAG=1
-					;;
+				;;
 			r)	FRASCATI_REMOTE_FLAG=1
-					;;
+				;;
 			?)	printf "Usage: %s %s [-s] [-r] args\n" $(basename $0) $FRASCATI_SUB_CMD >&2
-					exit 2
-					;;
+				exit 2
+				;;
 			esac
 		done
 	shift $(($OPTIND - 1))
@@ -187,9 +210,10 @@ case "$1" in
 	;;
 	run)
 	check_config
-	shift
+	parse_run_opts $*
+	shift $OPTIND
 	echo "Running OW2 FraSCAti ..."
-	$JAVA -Djava.security.policy=$FRASCATI_HOME/conf/java.policy -Djava.util.logging.config.file=$LOGGING -Dlog4j.configuration=logging.properties -cp $FRASCATI_HOME/conf:$LAUNCHER_LIB $LAUNCHER_MAIN $FRASCATI_MAIN -lib $FRASCATI_LIB $*
+	$JAVA $RUN_PROPERTIES -Djava.security.policy=$FRASCATI_HOME/conf/java.policy -Djava.util.logging.config.file=$LOGGING -Dlog4j.configuration=logging.properties -cp $FRASCATI_HOME/conf:$LAUNCHER_LIB $LAUNCHER_MAIN $FRASCATI_MAIN -lib $RUN_CLASSPATH $*
 	echo "Exiting OW2 FraSCAti ..."
 	;;
 	explorer)
