@@ -81,11 +81,13 @@ parse_opts() {
 compile() {
 echo "$1"
 echo "$2"
+echo "$3"
   if [ -z $1 ] || [ -z $2 ]
   then
-    echo "Usage: frascati compile <src> <name>"
+    echo "Usage: frascati compile <src> <name> <dependency-libs>"
     echo "  <src>  = directory of the sources to compile"
     echo "  <name> = name of the jar to build"
+    echo "  <dependency-libs> = (optional) jar libraries to include in the CLASSPATH"
     exit 1
   fi
 
@@ -98,7 +100,7 @@ echo "$2"
 
   mkdir $OUTPUT
 
-  $JAVAC -d $OUTPUT -cp $FRASCATI_LIB/osoa-java-api-2.0.1.2.jar:$FRASCATI_LIB/jaxb-api-2.1.jar:$FRASCATI_LIB/geronimo-ws-metadata_2.0_spec-1.1.2.jar:$FRASCATI_LIB/geronimo-jaxws_2.1_spec-1.0.jar:$FRASCATI_LIB/jsr311-api-1.0.jar:$FRASCATI_LIB/explorer-1.0.jar:$FRASCATI_LIB/frascati-explorer-api-${FRASCATI_VERSION}.jar $SRC
+  $JAVAC -encoding UTF8 -d $OUTPUT -cp $FRASCATI_LIB/osoa-java-api-2.0.1.2.jar:$FRASCATI_LIB/jaxb-api-2.1.jar:$FRASCATI_LIB/geronimo-ws-metadata_2.0_spec-1.1.2.jar:$FRASCATI_LIB/geronimo-jaxws_2.1_spec-1.0.jar:$FRASCATI_LIB/jsr311-api-1.0.jar:$FRASCATI_LIB/explorer-1.0.jar:$FRASCATI_LIB/frascati-explorer-api-${FRASCATI_VERSION}.jar:"$3" $SRC
 
   # Include composite description files in the JAR
   for i in `find $1 -name *.composite`
@@ -124,6 +126,7 @@ echo "$2"
 
   rm -rf $OUTPUT
 }
+
 
 explorer() {
   EXPLORER_LAUNCHER=org.ow2.frascati.explorer.FrascatiExplorerLauncher
@@ -180,7 +183,7 @@ case "$1" in
   compile)
 	check_config
 	echo "Compiling ..."
-	compile "$2" "$3"
+	compile "$2" "$3" "$4"
 	;;
   run)
 	check_config
