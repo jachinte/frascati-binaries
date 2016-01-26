@@ -68,7 +68,7 @@ parse_run_opts() {
 			case "$opt" in
 				r)	RUN_CLASSPATH=$FRASCATI_LIB,$FRASCATI_LIB/remote,$FRASCATI_LIB/fscript
 					RUN_BOOTSTRAP=org.ow2.frascati.bootstrap.FraSCAtiJDTFractalRest
-					RUN_PROPERTIES="-Dorg.ow2.frascati.bootstrap=$RUN_BOOTSTRAP -Dorg.ow2.frascati.binding.uri.base=\"http://localhost:$OPTARG\""
+					RUN_PROPERTIES="-Dorg.ow2.frascati.bootstrap=$RUN_BOOTSTRAP -Dorg.ow2.frascati.binding.uri.base=http://localhost:$OPTARG"
 					printf -- "-\> FraSCAti Remote plugin activated\n"
 					printf -- "-\> FraSCAti Script plugin activated\n"
 					;;
