@@ -21,12 +21,12 @@ rem USA
 @setlocal
 
 if defined JAVA_HOME (
-  set JAVA=%JAVA_HOME%\bin\java
-  set JAVAC=%JAVA_HOME%\bin\javac
-  set JAR=%JAVA_HOME%\bin\jar
-  set JAVA_OPTS=-Xms16m -Xmx32m
+	set JAVA=%JAVA_HOME%\bin\java
+	set JAVAC=%JAVA_HOME%\bin\javac
+	set JAR=%JAVA_HOME%\bin\jar
+	set JAVA_OPTS=-Xms16m -Xmx32m
 ) else (
-  echo The JAVA_HOME variable is not set. Please initialize it in your environment
+	echo The JAVA_HOME variable is not set. Please initialize it in your environment
 )
 
 if exist "%FRASCATI_HOME%" goto CONFIG
@@ -63,10 +63,13 @@ if "%3" == "-r"  set FRASCATI_REMOTE_FLAG=TRUE
 
 if "%1" == "wsdl2java" (
 	echo Compiling ...
-    goto WSDL2JAVA
+		goto WSDL2JAVA
 ) else if "%1" == "compile" (
 	echo Compiling ...
-    goto COMPILE
+		goto COMPILE
+) else if "%1" == "compile-libs" (
+	echo Compiling with libs ...
+		goto COMPILELIBS
 ) else if "%1" == "run" (
 	echo Running OW2 FraSCAti ...
 	"%JAVA%" %JAVA_OPTS% -Djava.security.policy="%FRASCATI_HOME%\conf\java.policy" -Djava.util.logging.config.file="%LOGGING%" -Dlog4j.configuration=logging.properties -cp "%FRASCATI_HOME%"\conf;"%LAUNCHER_LIB%" %LAUNCHER_MAIN% %FRASCATI_MAIN% -lib "%FRASCATI_LIB%" %PARAMS:~4%
@@ -103,8 +106,8 @@ mkdir %OUTPUT%
 rem Search java sources in .\src\...
 setlocal ENABLEDELAYEDEXPANSION
 IF ERRORLEVEL 1 (
-  echo Impossible d'activer les extensions
-  goto END
+	echo Impossible d'activer les extensions
+	goto END
 )
 set SRC_FILES=
 for /r %1 %%X in (*.java) do (set SRC_FILES=!SRC_FILES! "%%X")
@@ -113,8 +116,8 @@ set SRC_FILES=%SRC_FILES:\=/%
 echo %SRC_FILES% > javasrc.tmp~
 
 if ERRORLEVEL 1 (
-  echo Cannot find Java source files in %1
-  goto END
+	echo Cannot find Java source files in %1
+	goto END
 )
 
 rem Compile Java sources
@@ -138,9 +141,63 @@ del /Q javasrc.tmp~
 goto END
 
 :COMPILE_USAGE
-echo Usage: frascati compile [src] [name]
+echo Usage: frascati compile-libs [src] [name]
 echo [src]  = directory of the sources to compile
 echo [name] = name of the jar to build
+goto END
+
+:COMPILELIBS
+for /f "usebackq tokens=3*" %%i in (`echo %*`) DO @ set LIBPARAMS=%%j
+shift
+if "%1"=="" goto COMPILELIBS_USAGE
+if "%2"=="" goto COMPILELIBS_USAGE
+
+set CURRENT_DIR=%CD%
+set OUTPUT=tmp
+mkdir %OUTPUT%
+
+rem Search java sources in .\src\...
+setlocal ENABLEDELAYEDEXPANSION
+IF ERRORLEVEL 1 (
+	echo Impossible d'activer les extensions
+	goto END
+)
+set SRC_FILES=
+for /r %1 %%X in (*.java) do (set SRC_FILES=!SRC_FILES! "%%X")
+setlocal DISABLEDELAYEDEXPANSION
+set SRC_FILES=%SRC_FILES:\=/%
+echo %SRC_FILES% > javasrc.tmp~
+
+if ERRORLEVEL 1 (
+	echo Cannot find Java source files in %1
+	goto END
+)
+
+rem Compile Java sources
+"%JAVAC%" -d "%OUTPUT%" -cp "%FRASCATI_LIB%\osoa-java-api-2.0.1.2.jar;%FRASCATI_LIB%\jaxb-api-2.1.jar;%FRASCATI_LIB%\geronimo-ws-metadata_2.0_spec-1.1.2.jar;%FRASCATI_LIB%\geronimo-jaxws_2.1_spec-1.0.jar;%FRASCATI_LIB%\jsr311-api-1.1.1.jar;%FRASCATI_LIB%\explorer-1.0.jar;%FRASCATI_LIB%\frascati-explorer-api-%FRASCATI_VERSION%.jar;%LIBPARAMS%" @javasrc.tmp~
+rem Copy composite files
+for /r %1 %%X in (*.composite) do (copy /Y "%%X" "%OUTPUT%")
+rem Copy Explorer files
+mkdir %OUTPUT%\META-INF
+for /r %1 %%X in (FraSCAti-Explorer.xml) do (copy /Y "%%X" "%OUTPUT%\META-INF")
+
+rem Build jar file
+cd %OUTPUT%
+"%JAR%" cf ../%2.jar *
+cd %CURRENT_DIR%
+echo Library %2.jar created
+
+rem clean up
+rmdir /S/Q "%OUTPUT%"
+del /Q javasrc.tmp~
+
+goto END
+
+:COMPILELIBS_USAGE
+echo Usage: frascati compile-libs [src] [name] [jar-files]
+echo [src]  = directory of the sources to compile
+echo [name] = name of the jar to build
+echo [jar-files] =  comma-separated jar libraries to include in the CLASSPATH
 goto END
 
 :EXPLORER
@@ -152,31 +209,31 @@ set EXPLORER_BOOTSTRAP=
 echo Running the OW2 FraSCAti Explorer ...
 
 if "%FRASCATI_REMOTE_FLAG%" == "TRUE" (
-  set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\fscript,%FRASCATI_LIB%\remote
-  set EXPLORER_BOOTSTRAP="-Dorg.ow2.frascati.bootstrap=org.ow2.frascati.bootstrap.FraSCAtiJDTFractalRest"
-  echo -^> FraSCAti Remote plugin activated
-  if "%FRASCATI_SCRIPT_FLAG%" == "TRUE" (
-    set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\explorer-fscript-plugin
-    echo -^> FraSCAti Script plugin activated
-  )
+	set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\fscript,%FRASCATI_LIB%\remote
+	set EXPLORER_BOOTSTRAP="-Dorg.ow2.frascati.bootstrap=org.ow2.frascati.bootstrap.FraSCAtiJDTFractalRest"
+	echo -^> FraSCAti Remote plugin activated
+	if "%FRASCATI_SCRIPT_FLAG%" == "TRUE" (
+		set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\explorer-fscript-plugin
+		echo -^> FraSCAti Script plugin activated
+	)
 ) else (
-  if "%FRASCATI_SCRIPT_FLAG%" == "TRUE" (
-    set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\fscript,%FRASCATI_LIB%\explorer-fscript-plugin
-    echo -^> FraSCAti Script plugin activated
-  )
+	if "%FRASCATI_SCRIPT_FLAG%" == "TRUE" (
+		set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%FRASCATI_LIB%\fscript,%FRASCATI_LIB%\explorer-fscript-plugin
+		echo -^> FraSCAti Script plugin activated
+	)
 )
 
 if exist %SCA_APPS_FOLDER% (
-  rem update the classpath with user libraries
-  pushd "%SCA_APPS_FOLDER%"
-  for /d %%X in ("*") do (set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%%~X)
-  popd
-  
-  rem search for composite files
-  setlocal EnableDelayedExpansion
-  set COMPOSITES=
-  for /r "%SCA_APPS_FOLDER%" %%X in (*.composite) do ( set COMPOSITES=!COMPOSITES! %%~nX )
-  setlocal DISABLEDELAYEDEXPANSION
+	rem update the classpath with user libraries
+	pushd "%SCA_APPS_FOLDER%"
+	for /d %%X in ("*") do (set EXPLORER_CLASSPATH=%EXPLORER_CLASSPATH%,%%~X)
+	popd
+	
+	rem search for composite files
+	setlocal EnableDelayedExpansion
+	set COMPOSITES=
+	for /r "%SCA_APPS_FOLDER%" %%X in (*.composite) do ( set COMPOSITES=!COMPOSITES! %%~nX )
+	setlocal DISABLEDELAYEDEXPANSION
 )
 
 "%JAVA%" %JAVA_OPTS% %EXPLORER_BOOTSTRAP% -cp "%LAUNCHER_LIB%" %LAUNCHER_MAIN% %EXPLORER_LAUNCHER% -lib "%EXPLORER_CLASSPATH%" %COMPOSITES%
