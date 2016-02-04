@@ -126,7 +126,7 @@ echo "$3"
 	$JAVAC -encoding UTF8 -d $OUTPUT -cp $FRASCATI_LIB/osoa-java-api-2.0.1.2.jar:$FRASCATI_LIB/jaxb-api-2.1.jar:$FRASCATI_LIB/geronimo-ws-metadata_2.0_spec-1.1.2.jar:$FRASCATI_LIB/geronimo-jaxws_2.1_spec-1.0.jar:$FRASCATI_LIB/jsr311-api-1.0.jar:$FRASCATI_LIB/explorer-1.0.jar:$FRASCATI_LIB/frascati-explorer-api-${FRASCATI_VERSION}.jar:"$3" $SRC
 
 	# Include composite description files in the JAR
-	for i in `find $1 -name *.composite`
+	for i in `find $1 -name *.composite -o -name *.xml -o -name *.properties`
 	do
 		cp $i $OUTPUT
 	done
