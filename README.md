@@ -8,7 +8,7 @@ It is a common situation that projects depend on java classes not in the source 
 ##### Example:
 ```bash
 $ frascati compile src server /path/to/my-external.jar:libs/another.jar
-c:\> frascati compile src server "C:\path\to\my-external.jar;libs\another.jar"
+c:\> frascati compile-libs src server "C:\path\to\my-external.jar;libs\another.jar"
 ```
 
 #### Include resources in jars
