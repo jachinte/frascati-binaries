@@ -1,6 +1,6 @@
 ## FraSCAti binaries
 
-This repository contains a customized version of the FraSCAti binaries, including:
+This repository contains a customized version of the FraSCAti binaries (v1.4), including:
 
 #### Scpecify classpath in components compilation
 It is a common situation that projects depend on java classes not in the source folder but in external `jar` files. Compiling this projects with the original FrASCAti binaries is not possible. With these binaries, you can optionally specify a third parameter including the classpath as you would do when using `javac`.
