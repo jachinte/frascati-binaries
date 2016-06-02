@@ -115,31 +115,35 @@ echo "$3"
 	fi
 
 	OUTPUT=clsTmp
-
-	for i in `find $1 -name *.java`
-	do
-		SRC="$SRC $i"
-	done
-
 	mkdir $OUTPUT
 
+	# For each source directory, do:
+	IFS=':' read -ra SOURCE <<< "$1"
+	for directory in "${SOURCE[@]}"; do
+		# Include java source files
+		for i in `find $directory -name *.java`
+		do
+			SRC="$SRC $i"
+		done
+
+		# Include composite, XML, properties & fscript files in the JAR
+		for i in `find $directory -name "*.composite" -o -name "*.xml" -o -name "*.properties" -o -name "*.fscript"`
+		do
+			cp $i $OUTPUT
+		done
+
+		# Include explorer description files in the JAR
+		if ! [ -d $OUTPUT/META-INF ]
+		then
+			mkdir $OUTPUT/META-INF
+		fi
+		for i in `find $directory -name FraSCAti-Explorer.xml`
+		do
+			cp $i $OUTPUT/META-INF/
+		done
+	done
+
 	$JAVAC -encoding UTF8 -d $OUTPUT -cp $FRASCATI_LIB/osoa-java-api-2.0.1.2.jar:$FRASCATI_LIB/jaxb-api-2.1.jar:$FRASCATI_LIB/geronimo-ws-metadata_2.0_spec-1.1.2.jar:$FRASCATI_LIB/geronimo-jaxws_2.1_spec-1.0.jar:$FRASCATI_LIB/jsr311-api-1.0.jar:$FRASCATI_LIB/explorer-1.0.jar:$FRASCATI_LIB/frascati-explorer-api-${FRASCATI_VERSION}.jar:"$3" $SRC
-
-	# Include composite description files in the JAR
-	for i in `find $1 -name "*.composite" -o -name "*.xml" -o -name "*.properties" -o -name "*.fscript"`
-	do
-		cp $i $OUTPUT
-	done
-
-	# Include explorer description files in the JAR
-	if ! [ -d $OUTPUT/META-INF ]
-	then
-		mkdir $OUTPUT/META-INF
-	fi
-	for i in `find $1 -name FraSCAti-Explorer.xml`
-	do
-		cp $i $OUTPUT/META-INF/
-	done
 
 	cd $OUTPUT
 	$JAR cf ../$2.jar *
