@@ -3,7 +3,7 @@
 This repository contains a customized version of the FraSCAti binaries (v1.4), including:
 
 #### Scpecify classpath in components compilation
-It is a common situation that projects depend on java classes not in the source folder but in external `jar` files. Compiling this projects with the original FrASCAti binaries is not possible. With these binaries, you can optionally specify a third parameter including the classpath as you would do when using `javac`.
+It is a common situation that projects depend on java classes not included in the source folder(s) but in external `jar` files. Compiling this projects with the original FrASCAti binaries is not possible. With these binaries, you can optionally specify a third parameter including the classpath as you would do when using `javac`.
 
 ##### Example:
 ```bash
@@ -33,3 +33,17 @@ $ frascati run -r 3000 helloworld-rmi-server -libpath server.jar:/path/to/my-ext
 The Remote API is activated on http://localhost:3000 (the specified port).
 
 __Note__: not supported on Windows yet
+
+---
+
+#### Compile several source directories
+Sometimes your project is composed of several source file directories, but you only want to compile a subset of them. You may want to do it because including all source files would require to specify the classpath for all classes (from all source directories). Using the FraSCAti binaries force you to specify the root directory (including all source subdirectories), while the enhanced binaries allow you to specify several directories:
+
+##### Example:
+```bash
+$ frascati compile project/src:project/src-gen /path/to/simple/classpath.jar
+```
+
+__Note__: 
+- Not supported on Windows yet
+- Do not use this command for compiling several projects. You may get the error: `duplicate class`, if you have the service interfaces in both projects.
