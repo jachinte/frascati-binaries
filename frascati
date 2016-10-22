@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 # OW2 FraSCAti distribution
 # Copyright (C) 2008-2009 INRIA, USTL
